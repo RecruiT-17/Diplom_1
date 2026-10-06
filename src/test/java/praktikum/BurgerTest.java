@@ -18,14 +18,9 @@ public class BurgerTest {
 
     private Burger burger;
 
-    @Mock
-    private Bun bun;
-
-    @Mock
-    private Ingredient sauce;
-
-    @Mock
-    private Ingredient filling;
+    @Mock private Bun bun;
+    @Mock private Ingredient sauce;
+    @Mock private Ingredient filling;
 
     private final float bunPrice;
     private final float saucePrice;
@@ -42,10 +37,10 @@ public class BurgerTest {
     @Parameterized.Parameters(name = "bun={0}, sauce={1}, filling={2} → price={3}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {100f, 50f, 200f, 450f},   // 2*100 + 50 + 200
-                {0f, 0f, 0f, 0f},          // нулевые цены
-                {150.5f, 10.25f, 20.5f, 331.75f}, // дробные цены
-                {300f, 300f, 300f, 1200f}  // 2*300 + 300 + 300
+                {100f, 50f, 200f, 450f},
+                {0f, 0f, 0f, 0f},
+                {150.5f, 10.25f, 20.5f, 331.75f},
+                {300f, 300f, 300f, 1200f}
         });
     }
 
@@ -59,18 +54,27 @@ public class BurgerTest {
     @Test
     public void setBunsShouldAssignBunToBurger() {
         burger.setBuns(bun);
-
         assertEquals(bun, burger.bun);
     }
 
 
     @Test
-    public void addIngredientShouldAddIngredientToList() {
+    public void addIngredientShouldIncreaseListSize() {
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
-
         assertEquals(2, burger.ingredients.size());
+    }
+
+    @Test
+    public void addIngredientShouldStoreFirstIngredient() {
+        burger.addIngredient(sauce);
         assertSame(sauce, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void addIngredientShouldStoreSecondIngredient() {
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
         assertSame(filling, burger.ingredients.get(1));
     }
 
@@ -78,19 +82,23 @@ public class BurgerTest {
     public void addIngredientShouldAllowDuplicates() {
         burger.addIngredient(sauce);
         burger.addIngredient(sauce);
-
         assertEquals(2, burger.ingredients.size());
     }
 
 
     @Test
-    public void removeIngredientShouldRemoveElementByIndex() {
+    public void removeIngredientShouldDecreaseListSize() {
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
-
         burger.removeIngredient(0);
-
         assertEquals(1, burger.ingredients.size());
+    }
+
+    @Test
+    public void removeIngredientShouldShiftRemainingElements() {
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.removeIngredient(0);
         assertSame(filling, burger.ingredients.get(0));
     }
 
@@ -98,51 +106,112 @@ public class BurgerTest {
     public void removeIngredientShouldRemoveLastElement() {
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
-
         burger.removeIngredient(1);
-
-        assertEquals(1, burger.ingredients.size());
         assertSame(sauce, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void removeIngredientFromEmptyListShouldThrowException() {
+        assertThrows(IndexOutOfBoundsException.class, () -> burger.removeIngredient(0));
     }
 
 
     @Test
-    public void moveIngredientShouldMoveElementForward() {
+    public void moveIngredientForwardShouldPutFillingFirst() {
+        Ingredient extra = mock(Ingredient.class);
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
-        Ingredient extra = mock(Ingredient.class);
         burger.addIngredient(extra);
 
         burger.moveIngredient(0, 2);
 
         assertSame(filling, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void moveIngredientForwardShouldPutExtraSecond() {
+        Ingredient extra = mock(Ingredient.class);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.addIngredient(extra);
+
+        burger.moveIngredient(0, 2);
+
         assertSame(extra, burger.ingredients.get(1));
+    }
+
+    @Test
+    public void moveIngredientForwardShouldPutSauceLast() {
+        Ingredient extra = mock(Ingredient.class);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.addIngredient(extra);
+
+        burger.moveIngredient(0, 2);
+
         assertSame(sauce, burger.ingredients.get(2));
     }
 
     @Test
-    public void moveIngredientShouldMoveElementBackward() {
+    public void moveIngredientBackwardShouldPutExtraFirst() {
+        Ingredient extra = mock(Ingredient.class);
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
-        Ingredient extra = mock(Ingredient.class);
         burger.addIngredient(extra);
 
         burger.moveIngredient(2, 0);
 
         assertSame(extra, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void moveIngredientBackwardShouldPutSauceSecond() {
+        Ingredient extra = mock(Ingredient.class);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.addIngredient(extra);
+
+        burger.moveIngredient(2, 0);
+
         assertSame(sauce, burger.ingredients.get(1));
+    }
+
+    @Test
+    public void moveIngredientBackwardShouldPutFillingLast() {
+        Ingredient extra = mock(Ingredient.class);
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+        burger.addIngredient(extra);
+
+        burger.moveIngredient(2, 0);
+
         assertSame(filling, burger.ingredients.get(2));
     }
 
     @Test
-    public void moveIngredientToSameIndexShouldNotChangeOrder() {
+    public void moveIngredientToSameIndexShouldKeepFirstElement() {
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
 
         burger.moveIngredient(1, 1);
 
         assertSame(sauce, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void moveIngredientToSameIndexShouldKeepSecondElement() {
+        burger.addIngredient(sauce);
+        burger.addIngredient(filling);
+
+        burger.moveIngredient(1, 1);
+
         assertSame(filling, burger.ingredients.get(1));
+    }
+
+    @Test
+    public void moveIngredientFromInvalidIndexShouldThrowException() {
+        burger.addIngredient(sauce);
+        assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(5, 0));
     }
 
 
@@ -163,74 +232,98 @@ public class BurgerTest {
     public void getPriceWithOnlyBunShouldBeDoubleBunPrice() {
         when(bun.getPrice()).thenReturn(bunPrice);
         burger.setBuns(bun);
-
         assertEquals(bunPrice * 2, burger.getPrice(), 0.0001f);
     }
 
+    @Test
+    public void getPriceWithoutBunShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> burger.getPrice());
+    }
+
+
+    @Test
+    public void getReceiptShouldStartWithBunLine() {
+        when(bun.getName()).thenReturn("black bun");
+        when(bun.getPrice()).thenReturn(100f);
+        burger.setBuns(bun);
+
+        assertTrue(burger.getReceipt().startsWith("(==== black bun ====)"));
+    }
 
     @Test
     public void getReceiptShouldContainBunNameTwice() {
         when(bun.getName()).thenReturn("black bun");
         when(bun.getPrice()).thenReturn(100f);
-
         burger.setBuns(bun);
 
         String receipt = burger.getReceipt();
-
-        // Проверяем, что имя булочки встречается дважды
-        int firstIndex = receipt.indexOf("(==== black bun ====)");
-        int lastIndex = receipt.lastIndexOf("(==== black bun ====)");
-        assertNotEquals(-1, firstIndex);
-        assertNotEquals(-1, lastIndex);
-        assertNotEquals(firstIndex, lastIndex);
+        int first = receipt.indexOf("(==== black bun ====)");
+        int last = receipt.lastIndexOf("(==== black bun ====)");
+        assertNotEquals(first, last);
     }
 
     @Test
-    public void getReceiptShouldContainIngredientTypeInLowerCase() {
+    public void getReceiptShouldContainSauceLine() {
         when(bun.getName()).thenReturn("white bun");
         when(bun.getPrice()).thenReturn(200f);
         when(sauce.getName()).thenReturn("hot sauce");
         when(sauce.getPrice()).thenReturn(100f);
         when(sauce.getType()).thenReturn(IngredientType.SAUCE);
+
+        burger.setBuns(bun);
+        burger.addIngredient(sauce);
+
+        assertTrue(burger.getReceipt().contains("= sauce hot sauce ="));
+    }
+
+    @Test
+    public void getReceiptShouldContainFillingLine() {
+        when(bun.getName()).thenReturn("white bun");
+        when(bun.getPrice()).thenReturn(200f);
         when(filling.getName()).thenReturn("cutlet");
         when(filling.getPrice()).thenReturn(100f);
         when(filling.getType()).thenReturn(IngredientType.FILLING);
 
         burger.setBuns(bun);
-        burger.addIngredient(sauce);
         burger.addIngredient(filling);
 
-        String receipt = burger.getReceipt();
-
-        assertTrue(receipt.contains("= sauce hot sauce ="));
-        assertTrue(receipt.contains("= filling cutlet ="));
+        assertTrue(burger.getReceipt().contains("= filling cutlet ="));
     }
 
     @Test
-    public void getReceiptShouldContainPrice() {
+    public void getReceiptShouldContainPriceLine() {
         when(bun.getName()).thenReturn("red bun");
         when(bun.getPrice()).thenReturn(300f);
-        when(sauce.getPrice()).thenReturn(100f);
         when(sauce.getName()).thenReturn("chili sauce");
+        when(sauce.getPrice()).thenReturn(100f);
         when(sauce.getType()).thenReturn(IngredientType.SAUCE);
 
         burger.setBuns(bun);
         burger.addIngredient(sauce);
 
-        String receipt = burger.getReceipt();
-
-        // 2*300 + 100 = 700
-        assertTrue(receipt.contains("Price: 700"));
+        assertTrue(burger.getReceipt().contains("Price: 700"));
     }
 
     @Test
-    public void getReceiptShouldFormatBunLineWithParenthesesAndEquals() {
+    public void getReceiptWithOnlyBunShouldNotContainSauce() {
         when(bun.getName()).thenReturn("black bun");
         when(bun.getPrice()).thenReturn(100f);
         burger.setBuns(bun);
 
-        String receipt = burger.getReceipt();
+        assertFalse(burger.getReceipt().contains("= sauce"));
+    }
 
-        assertTrue(receipt.startsWith("(==== black bun ====)"));
+    @Test
+    public void getReceiptWithOnlyBunShouldNotContainFilling() {
+        when(bun.getName()).thenReturn("black bun");
+        when(bun.getPrice()).thenReturn(100f);
+        burger.setBuns(bun);
+
+        assertFalse(burger.getReceipt().contains("= filling"));
+    }
+
+    @Test
+    public void getReceiptWithoutBunShouldThrowException() {
+        assertThrows(NullPointerException.class, () -> burger.getReceipt());
     }
 }
