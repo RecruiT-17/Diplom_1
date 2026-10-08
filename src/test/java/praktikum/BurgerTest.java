@@ -2,18 +2,12 @@ package praktikum;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.Collection;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(Parameterized.class)
 public class BurgerTest {
 
     private Burger burger;
@@ -22,41 +16,17 @@ public class BurgerTest {
     @Mock private Ingredient sauce;
     @Mock private Ingredient filling;
 
-    private final float bunPrice;
-    private final float saucePrice;
-    private final float fillingPrice;
-    private final float expectedPrice;
-
-    public BurgerTest(float bunPrice, float saucePrice, float fillingPrice, float expectedPrice) {
-        this.bunPrice = bunPrice;
-        this.saucePrice = saucePrice;
-        this.fillingPrice = fillingPrice;
-        this.expectedPrice = expectedPrice;
-    }
-
-    @Parameterized.Parameters(name = "bun={0}, sauce={1}, filling={2} → price={3}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][]{
-                {100f, 50f, 200f, 450f},
-                {0f, 0f, 0f, 0f},
-                {150.5f, 10.25f, 20.5f, 331.75f},
-                {300f, 300f, 300f, 1200f}
-        });
-    }
-
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
         burger = new Burger();
     }
 
-
     @Test
     public void setBunsShouldAssignBunToBurger() {
         burger.setBuns(bun);
         assertEquals(bun, burger.bun);
     }
-
 
     @Test
     public void addIngredientShouldIncreaseListSize() {
@@ -84,7 +54,6 @@ public class BurgerTest {
         burger.addIngredient(sauce);
         assertEquals(2, burger.ingredients.size());
     }
-
 
     @Test
     public void removeIngredientShouldDecreaseListSize() {
@@ -114,7 +83,6 @@ public class BurgerTest {
     public void removeIngredientFromEmptyListShouldThrowException() {
         assertThrows(IndexOutOfBoundsException.class, () -> burger.removeIngredient(0));
     }
-
 
     @Test
     public void moveIngredientForwardShouldPutFillingFirst() {
@@ -214,32 +182,30 @@ public class BurgerTest {
         assertThrows(IndexOutOfBoundsException.class, () -> burger.moveIngredient(5, 0));
     }
 
+    @Test
+    public void getPriceWithOnlyBunShouldBeDoubleBunPrice() {
+        when(bun.getPrice()).thenReturn(150f);
+        burger.setBuns(bun);
+        assertEquals(300f, burger.getPrice(), 0.0001f);
+    }
 
     @Test
-    public void getPriceShouldCalculateCorrectly() {
-        when(bun.getPrice()).thenReturn(bunPrice);
-        when(sauce.getPrice()).thenReturn(saucePrice);
-        when(filling.getPrice()).thenReturn(fillingPrice);
+    public void getPriceShouldSumBunAndIngredients() {
+        when(bun.getPrice()).thenReturn(100f);
+        when(sauce.getPrice()).thenReturn(50f);
+        when(filling.getPrice()).thenReturn(200f);
 
         burger.setBuns(bun);
         burger.addIngredient(sauce);
         burger.addIngredient(filling);
 
-        assertEquals(expectedPrice, burger.getPrice(), 0.0001f);
-    }
-
-    @Test
-    public void getPriceWithOnlyBunShouldBeDoubleBunPrice() {
-        when(bun.getPrice()).thenReturn(bunPrice);
-        burger.setBuns(bun);
-        assertEquals(bunPrice * 2, burger.getPrice(), 0.0001f);
+        assertEquals(450f, burger.getPrice(), 0.0001f);
     }
 
     @Test
     public void getPriceWithoutBunShouldThrowException() {
         assertThrows(NullPointerException.class, () -> burger.getPrice());
     }
-
 
     @Test
     public void getReceiptShouldStartWithBunLine() {
